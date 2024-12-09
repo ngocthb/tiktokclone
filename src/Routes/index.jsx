@@ -4,6 +4,7 @@ import Explore from "../components/Explore/Explore";
 import Following from "../components/Following/Following";
 import Live from "../components/Live/Live";
 import Profile from "../components/Profile/Profile";
+import VideosDetails from "../components/VideosDetails/VideosDetails";
 
 export const Routes = [
   {
@@ -27,9 +28,13 @@ export const Routes = [
         element: <Live />,
       },
       {
-        path: "/profile",
+        path: "/profile/:username",
         element: <Profile />,
       },
     ],
+  },
+  {
+    path: "/all/:videoId",
+    element: <VideosDetails />,
   },
 ];

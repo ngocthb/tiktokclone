@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faCircleCheck,
   faHeart,
   faComment,
   faBookmark,
@@ -11,9 +10,13 @@ import {
   faVolumeLow,
   faPause,
   faPlay,
+  faCheck,
+  faPlus,
 } from "@fortawesome/free-solid-svg-icons";
+
 import dayjs from "dayjs";
 import api from "../../config/axios";
+import { useNavigate } from "react-router-dom";
 
 export default function Video({ type }) {
   const [listOfVideos, setListOfVideos] = useState([]);
@@ -26,6 +29,10 @@ export default function Video({ type }) {
   const [volume, setVolume] = useState(0.5);
   const [playingVideoId, setPlayingVideoId] = useState(null);
   const observerRef = useRef(null);
+
+  const navigate = useNavigate();
+
+  const [video, setVideo] = useState(null);
 
   const fetchVideos = async () => {
     try {
@@ -131,6 +138,34 @@ export default function Video({ type }) {
     }
   };
 
+  const fetchFollowUser = async (userId, type) => {
+    try {
+      const res = await api.post(`users/${userId}/${type}`);
+      const data = res.data.data;
+      const updatedList = listOfVideos.map((item) => {
+        if (item.user.id === userId) {
+          item.user = data;
+        }
+        return item;
+      });
+      setListOfVideos(updatedList);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleClickFollow = async (userId, isFollowed) => {
+    if (isFollowed) {
+      fetchFollowUser(userId, "unfollow");
+    } else {
+      fetchFollowUser(userId, "follow");
+    }
+  };
+
+  const handelComment = (videoId) => {
+    navigate(`/all/${videoId}`);
+  };
+
   return (
     <div
       ref={scrollableContainerRef}
@@ -210,8 +245,11 @@ export default function Video({ type }) {
                 />
 
                 <FontAwesomeIcon
-                  icon={faCircleCheck}
-                  className="text-red-500 text-2xl absolute bottom-0"
+                  onClick={() =>
+                    handleClickFollow(item.user.id, item.user.is_followed)
+                  }
+                  icon={item.user.is_followed ? faCheck : faPlus}
+                  className="text-red-500 bg-gray-100 rounded-full p-1  text-base absolute bottom-0 cursor-pointer "
                   style={{ transform: "translateY(10px)" }}
                 />
               </div>
@@ -224,6 +262,9 @@ export default function Video({ type }) {
               <FontAwesomeIcon
                 icon={faComment}
                 className="text-black text-2xl bg-gray-100 rounded-full p-3 mt-2 cursor-pointer hover:scale-110"
+                onClick={() => {
+                  handelComment(item.id);
+                }}
               />
               {item.comments_count}
               <FontAwesomeIcon

@@ -12,7 +12,7 @@ function DefaultLayout() {
         <div className="grid grid-cols-5 ">
           <div
             className="col-span-1 p-2 overflow-y-scroll"
-            style={{ height: "88vh" }}
+            style={{ height: "91vh" }}
           >
             <Sidebar />
           </div>

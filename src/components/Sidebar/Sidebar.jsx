@@ -1,6 +1,6 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
   faHouse,
   faCompass,
@@ -11,8 +11,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useState, useEffect, useRef } from "react";
 import LoginModal from "../Login/LoginModal";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import api from "../../config/axios";
+import Swal from "sweetalert2";
 
 function Sidebar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,6 +26,10 @@ function Sidebar() {
   const [listOfFollower, setListOfFollower] = useState([]);
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({});
+
+  const dispatch = useDispatch();
+
+  const navigation = useNavigate();
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -48,7 +53,7 @@ function Sidebar() {
     if (user) {
       setIsLoggedIn(true);
       setIsModalOpen(false);
-      setUserLogin(user.data);
+      setUserLogin(user);
     }
   }, [user]);
 
@@ -94,7 +99,6 @@ function Sidebar() {
   }, [page, isLoggedIn]);
 
   const handlePageChange = async () => {
-    console.log("page", pagination);
     if (page >= pagination.total_pages) {
       const updatedListOfFollowers = listOfFollower.filter(
         (item) => !follower.some((f) => f.id === item.id)
@@ -103,6 +107,25 @@ function Sidebar() {
       setPage((pre) => pre - 1);
     } else {
       setPage((pre) => pre + 1);
+    }
+  };
+
+  const handClickProfile = (nickname) => {
+    navigation(`/profile/${nickname}`);
+  };
+
+  const handleClickProfileUser = () => {
+    if (isLoggedIn) {
+      navigation(`/profile/videos`);
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "You need to login to perform this action.",
+        timer: 1500,
+        showConfirmButton: false,
+        position: "center",
+      });
     }
   };
 
@@ -147,7 +170,7 @@ function Sidebar() {
         </li>
         <li className="p-3 text-xl">
           <NavLink
-            to="/profile"
+            to={`/profile/${userLogin?.nickname}`}
             className={({ isActive }) => (isActive ? "text-red-500" : "")}
           >
             <FontAwesomeIcon icon={faUser} className="pr-4" />
@@ -162,7 +185,11 @@ function Sidebar() {
             Following accounts
           </h1>
           {(listOfFollower || []).map((item) => (
-            <div key={item.id} className="grid grid-cols-4 p-1">
+            <div
+              key={item.id}
+              className="grid grid-cols-4 p-1 hover:bg-gray-100 cursor-pointer"
+              onClick={() => handClickProfile(item.nickname)}
+            >
               <img
                 className="col-span-1 rounded-full w-12 h-12 object-cover mt-1"
                 src={item.avatar}

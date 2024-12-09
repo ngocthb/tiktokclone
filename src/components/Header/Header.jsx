@@ -22,16 +22,13 @@ import {
 import api from "../../config/axios";
 import { loginUser, logoutUser } from "../../store/authSlice";
 import { useSelector, useDispatch } from "react-redux";
-import {
-  Dialog,
-  DialogBackdrop,
-  DialogPanel,
-  DialogTitle,
-} from "@headlessui/react";
-import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+
 import LoginModal from "../Login/LoginModal";
+import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 
 function Header() {
+  const navigate = useNavigate();
   // =========================Search================================
   const [searchValue, setSearchValue] = useState("");
   const [searchRst, setSearchRst] = useState([]);
@@ -164,7 +161,27 @@ function Header() {
                   }
                 : () => {
                     if (item.label === "Log out") {
-                      setOpen(true);
+                      Swal.fire({
+                        title: "Are you sure?",
+                        text: "You won't be able to revert this!",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#3085d6",
+                        cancelButtonColor: "#d33",
+                        confirmButtonText: "Log out",
+                      }).then((result) => {
+                        if (result.isConfirmed) {
+                          Swal.fire({
+                            title: "Logged out!",
+                            text: "Your account has been logged out.",
+                            icon: "success",
+                          });
+                          handelLogOut();
+                        }
+                      });
+                    }
+                    if (item.label === "View Profile") {
+                      navigate(`/profile/${userLogin.nickname}`);
                     }
                   }
             }
@@ -214,15 +231,13 @@ function Header() {
     setUserLogin(null);
   };
 
-  // console.log("User login:", user);
-
   return (
     <header className="font-grotesk grid grid-cols-5 items-center h-16 border-b">
       <div className="col-span-1">
         <img
-          src="https://firebasestorage.googleapis.com/v0/b/tiktok-clone-7f36e.firebasestorage.app/o/logo_name.png?alt=media&token=826f003b-676f-4c06-bbf3-828f0315a30e"
+          src="https://images.squarespace-cdn.com/content/v1/641692cb8c08c914772bb31d/7a56592b-a19d-433a-8ac5-dbf992d59d2c/TikTok-Logomark%26Wordmark-Logo.wine.jpg"
           alt="logo"
-          className="h-16 w-40 object-cover"
+          className="h-8 px-4"
         />
       </div>
       <div className="col-span-3 flex justify-center items-center">
@@ -353,67 +368,6 @@ function Header() {
         password={password}
         setPassword={setPassword}
       />
-
-      <Dialog open={open} onClose={setOpen} className="relative z-10">
-        <DialogBackdrop
-          transition
-          className="fixed inset-0 bg-gray-500/75 transition-opacity data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in"
-        />
-
-        <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
-          <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-            <DialogPanel
-              transition
-              className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all data-[closed]:translate-y-4 data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in sm:my-8 sm:w-full sm:max-w-lg data-[closed]:sm:translate-y-0 data-[closed]:sm:scale-95"
-            >
-              <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-                <div className="sm:flex sm:items-start">
-                  <div className="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:size-10">
-                    <ExclamationTriangleIcon
-                      aria-hidden="true"
-                      className="size-6 text-red-600"
-                    />
-                  </div>
-                  <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-                    <DialogTitle
-                      as="h3"
-                      className="text-base font-semibold text-gray-900"
-                    >
-                      Log out account
-                    </DialogTitle>
-                    <div className="mt-2">
-                      <p className="text-sm text-gray-500">
-                        Are you sure you want to logout your account? All of
-                        your data will be permanently removed. This action
-                        cannot be undone.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                <button
-                  type="button"
-                  onClick={() => {
-                    handelLogOut();
-                  }}
-                  className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
-                >
-                  Log out
-                </button>
-                <button
-                  type="button"
-                  data-autofocus
-                  onClick={() => setOpen(false)}
-                  className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
-                >
-                  Cancel
-                </button>
-              </div>
-            </DialogPanel>
-          </div>
-        </div>
-      </Dialog>
     </header>
   );
 }

@@ -3,7 +3,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleXmark } from "@fortawesome/free-solid-svg-icons";
 import { useDispatch } from "react-redux";
 import { loginUser } from "../../store/authSlice";
-import DefaultModal from "../DefaultModal/DefaultModal";
+import Swal from "sweetalert2";
+import api from "../../config/axios";
+
 function LoginModal({
   isOpen,
   onClose,
@@ -14,16 +16,56 @@ function LoginModal({
 }) {
   const [modal, setModal] = useState("login");
   const [confirmPassword, setConfirmPassword] = useState("");
+
   const dispatch = useDispatch();
   const handleLogin = () => {
     dispatch(loginUser(email, password));
   };
 
+  const handleClose = () => {
+    setModal("login");
+    onClose();
+  };
+
   if (!isOpen) return null;
 
-  const checkPassword = () => {
+  const fetchRegister = async () => {
     if (password !== confirmPassword) {
-      <DefaultModal />;
+      Swal.fire({
+        position: "top-end",
+        icon: "error",
+        title: "The confirm password does not match",
+        showConfirmButton: false,
+        timer: 2000,
+      });
+      return;
+    }
+    try {
+      const res = await api.post("auth/register", {
+        type: "email",
+        email: email,
+        password: password,
+      });
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: "Register success",
+        showConfirmButton: false,
+        timer: 2000,
+      });
+      setModal("login");
+    } catch (error) {
+      if (error.response.status === 422) {
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: "Email already exists",
+          showConfirmButton: false,
+          timer: 2000,
+        });
+      } else {
+        console.error(error);
+      }
     }
   };
 
@@ -105,15 +147,24 @@ function LoginModal({
             onChange={(e) => setConfirmPassword(e.target.value)}
             className="w-full p-2 mb-4 border border-gray-300 rounded-md"
           />
+          <div className="p-3">
+            Already have an account?{"  "}
+            <span
+              className="text-red-500 cursor-pointer font-bold"
+              onClick={() => setModal("login")}
+            >
+              Log in
+            </span>
+          </div>
           <div className="flex justify-between items-center">
             <button
-              onClick={() => handleLogin()}
+              onClick={() => fetchRegister()}
               className="w-full bg-red-500 text-white py-2 rounded-md"
             >
               Log In
             </button>
             <button
-              onClick={() => checkPassword()}
+              onClick={() => handleClose()}
               className="ml-4 py-2 text-gray-600"
             >
               Cancel
